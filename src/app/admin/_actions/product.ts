@@ -1,10 +1,10 @@
 "use server";
 
-import db from "@/app/db/db";
+import db from "@/db/db";
 import { z } from "zod";
 
 import fs from "fs/promises";
-import { redirect } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 
 const fileSchema = z.instanceof(File, { message: "required" });
 
@@ -54,4 +54,67 @@ export async function AddProduct(prevState: unknown, formData: FormData) {
   });
 
   redirect("/admin/products");
+}
+
+const editSchema = ProductSchema.extend({
+  file: fileSchema.optional(),
+  image: fileSchema.optional(),
+});
+
+export async function EditProduct(
+  id: string,
+  prevState: unknown,
+  formData: FormData
+) {
+  const result = editSchema.safeParse({
+    name: formData.get("product_name"),
+    price: formData.get("product_price"),
+    desc: formData.get("product_desc"),
+    file: formData.get("product_file"),
+    image: formData.get("product_img"),
+  });
+
+  if (result.success === false) {
+    return result.error.formErrors.fieldErrors;
+  }
+
+  const data = result.data;
+  const product = await db.product.findUnique({ where: { id: id } });
+  if (product == null) return notFound();
+
+  let filepath = product.filePath;
+  if (data.file != null && data.file.size > 0) {
+    await fs.unlink(product.filePath);
+    filepath = `products/${crypto.randomUUID()}-${data.file.name}`;
+    await fs.writeFile(filepath, Buffer.from(await data.file.arrayBuffer()));
+  }
+
+  let imagePath = product.imagePath;
+  if (data.image != null && data.image.size > 0) {
+    await fs.unlink(`public${product.imagePath}`);
+    imagePath = `/products/${crypto.randomUUID()}-${data.image.name}`;
+    await fs.writeFile(
+      `public${imagePath}`,
+      Buffer.from(await data.image.arrayBuffer())
+    );
+  }
+
+  await db.product.update({
+    where: { id: id },
+    data: {
+      purchasable: false,
+      name: data.name,
+      description: data.desc,
+      price: data.price,
+      filePath: filepath,
+      imagePath: imagePath,
+    },
+  });
+
+  redirect("/admin/products");
+}
+
+export async function deleteProduct(id: string) {
+  const product = db.product.delete({ where: { id: id } });
+  if (product == null) return notFound();
 }

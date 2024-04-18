@@ -1,6 +1,6 @@
 import { Button, SimpleGrid, GridItem, Heading, Text } from "@chakra-ui/react";
 import { Card, CardHeader, CardBody, CardFooter } from "@chakra-ui/react";
-import db from "../db/db";
+import db from "../../db/db";
 import { CURRENCY_FORM, NUM_FORM } from "../formaters/format";
 
 const getSalesData = async () => {

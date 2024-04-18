@@ -13,8 +13,9 @@ import {
 } from "@chakra-ui/react";
 import PageHeader from "../_components/PageHeader";
 import Link from "next/link";
-import db from "@/app/db/db";
+import db from "@/db/db";
 import { CURRENCY_FORM } from "@/app/formaters/format";
+import { DeleteItem } from "../_components/ProductActions";
 
 function AdminProductPage() {
   return (
@@ -53,25 +54,38 @@ async function ProductsTable() {
   if (products.length === 0) return <p>No Products</p>;
 
   return (
-    <TableContainer>
-      <Table variant="simple">
-        <Thead>
-          <Tr>
-            <Th>Name</Th>
-            <Th>Price</Th>
-            <Th>Orders by</Th>
+    <Table variant="simple">
+      <Thead>
+        <Tr>
+          <Th>Name</Th>
+          <Th>Price</Th>
+          <Th>Orders by</Th>
+        </Tr>
+      </Thead>
+      <Tbody>
+        {products.map((product) => (
+          <Tr key={product.id}>
+            <Td>{product.name}</Td>
+            <Td>{CURRENCY_FORM(product.price)}</Td>
+            <Td>{product._count.orders}</Td>
+            <ButtonGroup spacing={4}>
+              <Button bgColor="pink" color="black" fontSize="sm" as="b">
+                <a href={`/admin/products/${product.id}/download`}>
+                  {" "}
+                  Download{" "}
+                </a>
+              </Button>
+              <Button bgColor="pink" color="black" fontSize="sm" as="b">
+                <a href={`/admin/products/${product.id}/edit`}> Edit </a>
+              </Button>
+              <DeleteItem
+                id={product.id}
+                disabled={product._count.orders > 0}
+              />
+            </ButtonGroup>
           </Tr>
-        </Thead>
-        <Tbody>
-          {products.map((product) => (
-            <Tr key={product.id}>
-              <Td>{product.name}</Td>
-              <Td>{CURRENCY_FORM(product.price)}</Td>
-              <Td>{product._count.orders}</Td>
-            </Tr>
-          ))}
-        </Tbody>
-      </Table>
-    </TableContainer>
+        ))}
+      </Tbody>
+    </Table>
   );
 }

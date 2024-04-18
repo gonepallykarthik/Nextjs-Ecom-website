@@ -9,7 +9,10 @@ export default function AdminLayout({
   return (
     <>
       <Nav />
-      <Container my={6}>{children}</Container>
+
+      <Container my={20} maxW="container.md">
+        {children}
+      </Container>
     </>
   );
 }
