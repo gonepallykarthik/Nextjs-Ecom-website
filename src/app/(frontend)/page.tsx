@@ -1,5 +1,6 @@
 import ProductCard from "@/User_components/ProductCard";
 import db from "@/db/db";
+import { cache } from "@/lib/cache";
 import {
   Box,
   Button,
@@ -12,19 +13,23 @@ import {
 import { Product } from "@prisma/client";
 import Link from "next/link";
 
-function getMostPopularItems() {
-  return db.product.findMany({
-    where: { purchasable: true },
-    orderBy: { orders: { _count: "desc" } },
-  });
-}
+const getMostPopularItems = cache(
+  () => {
+    return db.product.findMany({
+      where: { purchasable: true },
+      orderBy: { orders: { _count: "desc" } },
+    });
+  },
+  ["/", "getMostPopularItems"],
+  { revalidate: 60 * 60 * 24 }
+);
 
-function getNewestItems() {
+const getNewestItems = cache(() => {
   return db.product.findMany({
     where: { purchasable: true },
     orderBy: { createdAt: "desc" },
   });
-}
+}, ["/", "getNewestItems"]);
 
 function HomePage() {
   return (

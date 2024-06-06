@@ -2,13 +2,14 @@ import db from "@/db/db";
 import { Container, Flex, Grid, Text } from "@chakra-ui/react";
 import { ProductGridSection } from "../page";
 import ProductCard from "@/User_components/ProductCard";
+import { cache } from "@/lib/cache";
 
-async function getAllProducts() {
+const getAllProducts = cache(async () => {
   return await db.product.findMany({
     where: { purchasable: true },
     orderBy: { name: "asc" },
   });
-}
+}, ["/", "getAllProducts"]);
 
 async function ProductPage() {
   const prods = await getAllProducts();
