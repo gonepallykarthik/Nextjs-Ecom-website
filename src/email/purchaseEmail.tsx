@@ -26,7 +26,9 @@ export default function PurchaseReceiptEmail({
 }: PurchaseReceiptEmailProps) {
   return (
     <Html>
-      <Preview>Download {product.name} and view receipt</Preview>
+      <Preview>
+        Thank you for Purchasing Download {product.name} and view receipt
+      </Preview>
       <Tailwind>
         <Head />
         <Body className="font-sans bg-white">
